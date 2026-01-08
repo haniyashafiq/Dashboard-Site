@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - PMS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- CSS Reset & Variables --- */
+        :root {
+            --primary-color: #4F46E5; /* Theme Purple/Blue */
+            --primary-dark: #4338ca;
+            --secondary-bg: #F9FAFB;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--white);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* --- Navbar Styles --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 5%;
+            background-color: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 30px; /* Adjusted size slightly */
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Mobile Menu Button (Hidden on Desktop) */
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        /* --- Contact Section Styles --- */
+        .contact-section {
+            padding: 4rem 5%;
+            background-color: #ffffff;
+            color: #111827;
+        }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .header-text h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .header-text .highlight {
+            color: var(--primary-color);
+        }
+
+        .header-text p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            max-width: 500px;
+        }
+
+        .header-image {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            min-width: 300px;
+        }
+
+        .header-image img {
+            max-width: 350px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .contact-grid {
+            display: flex;
+            gap: 4rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* Form Card */
+        .form-card {
+            flex: 2;
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid #f3f4f6;
+            min-width: 300px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            color: #1f2937;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9CA3AF;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            background-color: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea.form-control {
+            padding: 14px;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Info Card */
+        .info-card {
+            flex: 1;
+            background-color: #F3F4F6;
+            padding: 2rem;
+            border-radius: 16px;
+            min-width: 280px;
+            margin-top: 2rem;
+        }
+
+        .info-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e0e7ff;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .info-content h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .info-content p, .info-content a {
+            color: #4B5563;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* --- Responsive Design (Mobile) --- */
+        @media (max-width: 900px) {
+            .contact-grid {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .form-card, .info-card {
+                width: 100%;
+            }
+            .header-image {
+                justify-content: center;
+            }
+            .header-text {
+                text-align: center;
+            }
+            .header-image img {
+                max-width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none; /* Hide by default on mobile */
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--white);
+                padding: 2rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                text-align: center;
+            }
+
+            .nav-links.active {
+                display: flex; /* Show when active */
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 10px;
+                display: block;
+            }
+            
+            .navbar {
+                padding: 1rem 5%;
+            }
+            
+            .header-text h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+ <style>
+        /* --- CSS Variables --- */
+        :root {
+            --primary-color: #4F46E5;
+            --primary-dark: #4338ca;
+            --text-dark: #111827;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- Navbar Styles --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between; /* Space between Logo and Button */
+            align-items: center;
+            padding: 1rem 5%; /* Desktop Padding */
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 70px;
+        }
+
+        /* Logo Area */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-dark);
+        }
+
+        .brand-logo {
+            height: 32px; /* Logo Size */
+            width: auto;
+        }
+
+        .brand-text {
+            color: #4338ca;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        /* Home Button */
+        .nav-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 0.6rem 1.8rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* --- Mobile Tweaks (No Menu, Just Adjustments) --- */
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 0 1.2rem; /* Thoda kam gap sides se */
+            }
+            
+            .brand-text {
+                font-size: 1.2rem; /* Text thoda chota taake fit aaye */
+            }
+
+            .nav-btn {
+                padding: 0.5rem 1.2rem; /* Button thoda compact */
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+ 
+
+    <nav class="navbar">
+        <a href="#" class="nav-brand">
+            <img src="../images/logo.png" alt="Logo" class="brand-logo"> 
+            <span class="brand-text">PMS.</span>
+        </a>
+
+        <a href="../index.html" class="nav-btn">Home</a>
+    </nav>
+
+</body>
+</html>
+    <section class="contact-section">
+        <div class="contact-header">
+            <div class="header-text">
+                <h2>Questions? <span class="highlight">Let's talk.</span></h2>
+                <p>We're here to answer your questions regarding our services. Fill out the form and we'll be in touch as soon as possible.</p>
+            </div>
+            <div class="header-image">
+                <img src="https://img.freepik.com/free-vector/flat-design-illustration-customer-support_23-2148887720.jpg?w=740" alt="Contact Support Illustration">
+            </div>
+        </div>
+
+        <div class="contact-grid">
+            
+            <div class="form-card">
+                <form>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-user"></i>
+                            <input type="text" class="form-control" placeholder="Enter Your Full Name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="email" class="form-control" placeholder="Enter Your Email">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <input type="text" class="form-control" style="padding-left: 14px;" placeholder="I need a PMS for my clinic">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-control" placeholder="Tell us about your requirement..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Send Message</button>
+                </form>
+            </div>
+
+            <div class="info-card">
+                <h3>Contact Information</h3>
+                
+                <div class="info-item">
+                    <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="info-content">
+                        <h4>Email Us</h4>
+                        <a href="mailto:hashim@codedclouds.org">hashim@codedclouds.org</a>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon"><i class="fa-solid fa-phone-volume"></i></div>
+                    <div class="info-content">
+                        <h4>Call Us</h4>
+                        <p>+966-557385262</p>
+                        <p>+92 302 5815858</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <style>
+    .pms-footer {
+        background-color: #0F172A; /* Dark Theme Bg */
+        color: #9CA3AF; /* Gray Text */
+        padding: 1.5rem 5%;
+        font-family: 'Inter', sans-serif;
+        border-top: 1px solid #1E293B;
+        font-size: 0.9rem;
+    }
+
+    .footer-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .footer-center {
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .footer-center strong {
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .footer-links a {
+        color: #9CA3AF;
+        text-decoration: none;
+        margin-left: 20px;
+        transition: 0.3s;
+    }
+
+    .footer-links a:hover {
+        color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+        .footer-container {
+            flex-direction: column;
+            text-align: center;
+        }
+        .footer-links a {
+            margin: 0 10px;
+        }
+    }
+</style>
+
+<footer class="pms-footer">
+    <div class="footer-container">
+        
+        <div class="footer-left">
+            &copy; 2026 PMS. All rights reserved.
+        </div>
+
+        <a href="https://codedclouds.org">
+            <div class="footer-center">
+            Powered by <strong>CODED CLOUDS</strong> <i class="fa-solid fa-bolt"></i>
+        </div>
+        </a>
+
+        <div class="footer-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+        </div>
+
+    </div>
+</footer>
+    <script>
+        const menuToggle = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            
+            // Toggle Icon
+            const icon = menuToggle.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - PMS Smart Solution</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS Reset & Variables --- */
+        :root {
+            --primary-color: #4F46E5; /* Theme Purple/Blue */
+            --primary-dark: #4338ca;
+            --secondary-bg: #F9FAFB;
+            --text-dark: #111827;
+            --text-gray: #6B7280;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--white);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* --- Navbar --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 5%;
+            background-color: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 30px; /* Thoda adjust kiya taake clear dikhe */
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* --- Hero Section --- */
+        .features-hero {
+            text-align: center;
+            padding: 4rem 5% 2rem;
+            background: linear-gradient(180deg, #F3F4F6 0%, #FFFFFF 100%);
+        }
+
+        .features-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .features-hero p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+        }
+
+        /* --- Features Grid --- */
+        .features-section {
+            padding: 4rem 5%;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid #E5E7EB;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-5px);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            background-color: #EEF2FF;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-dark);
+        }
+
+        .feature-card p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* --- Detailed Feature (Zig-Zag) --- */
+        .detailed-feature {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4rem 5%;
+            gap: 4rem;
+        }
+
+        .detailed-feature:nth-child(even) {
+            background-color: var(--secondary-bg);
+            flex-direction: row-reverse;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-text h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .feature-text p {
+            color: var(--text-gray);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .feature-list li i {
+            color: var(--primary-color);
+        }
+
+        /* --- IMAGE STYLING (UPDATED) --- */
+        .feature-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .real-img {
+            width: 100%;
+            max-width: 550px;
+            height: auto; /* Ensures aspect ratio remains correct */
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); /* Nice shadow for pop effect */
+            object-fit: cover;
+        }
+
+        /* --- CTA Section --- */
+        .cta-section {
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-align: center;
+            padding: 5rem 2rem;
+            margin: 4rem 5%;
+            border-radius: 24px;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section button {
+            background-color: var(--white);
+            color: var(--primary-color);
+            margin-top: 1.5rem;
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cta-section button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: #1F2937;
+            color: #D1D5DB;
+            padding: 3rem 5%;
+            text-align: center;
+        }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .nav-links {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .features-hero h1 {
+                font-size: 2rem;
+            }
+            
+            /* Stacks image and text vertically on mobile */
+            .detailed-feature {
+                flex-direction: column !important; 
+                text-align: center;
+                gap: 2rem;
+                padding: 3rem 5%;
+            }
+            
+            .feature-list li {
+                justify-content: center;
+            }
+
+            .real-img {
+                max-width: 100%; /* Full width on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a class="navbar-brand" href="#">
+            <img src="../images/logo.png" alt="PMS Logo" class="brand-logo">
+            <span class="brand-text">PMS.</span>
+        </a>
+        <div class="nav-links">
+            <a href="../index.html">Home</a>
+            <a href="./f.html" class="active">Features</a>
+            <a href="./pricing.html">Pricing</a>
+            <a href="./Coontact.html">Contact</a>
+        </div>
+        <button class="btn-primary">Book a Demo</button>
+    </nav>
+
+    <section class="features-hero">
+        <h1>All the tools you need to <br><span class="highlight">run your hospital</span> efficiently.</h1>
+        <p>From patient registration to complex analytics, our PMS puts you in complete control.</p>
+    </section>
+
+    <section class="features-section">
+        <div class="grid-container">
+            <div class="feature-card">
+                <div class="icon-box"><i class="fa-solid fa-users-medical"></i></div>
+                <h3>Patient Management</h3>
+                <p>Keep detailed digital records of patient history, prescriptions, and visits in one secure place.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fa-solid fa-calendar-check"></i></div>
+                <h3>Smart Scheduling</h3>
+                <p>Drag-and-drop appointment booking that reduces no-shows with automated SMS/Email reminders.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fa-solid fa-chart-pie"></i></div>
+                <h3>Advanced Analytics</h3>
+                <p>Visualize hospital performance with real-time dashboards for revenue, occupancy, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <h3>Billing & Invoicing</h3>
+                <p>Generate automated invoices, track insurance claims, and manage hospital finances seamlessly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fa-solid fa-user-doctor"></i></div>
+                <h3>Doctor Portal</h3>
+                <p>Dedicated portal for doctors to view schedules, write e-prescriptions, and track patient progress.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Data Security</h3>
+                <p>Enterprise-grade security with role-based access control to keep sensitive patient data safe.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="detailed-feature">
+        <div class="feature-text">
+            <h2>Real-time Analytics Dashboard</h2>
+            <p>Make data-driven decisions. Our intuitive dashboard gives you a bird's eye view of your entire hospital's operations at a glance.</p>
+            <ul class="feature-list">
+                <li><i class="fa-solid fa-check-circle"></i> Monitor daily appointments & cancellations</li>
+                <li><i class="fa-solid fa-check-circle"></i> Track revenue growth month-over-month</li>
+                <li><i class="fa-solid fa-check-circle"></i> Visualize patient demographics</li>
+            </ul>
+        </div>
+        <div class="feature-image">
+            <img src="../images/d1.png" alt="Real-time Analytics Dashboard" class="real-img">
+        </div>
+    </section>
+
+    <section class="detailed-feature">
+        <div class="feature-text">
+            <h2>Seamless Patient Records</h2>
+            <p>Say goodbye to paper files. Access patient history, lab reports, and prescriptions instantly from any device, anywhere.</p>
+            <ul class="feature-list">
+                <li><i class="fa-solid fa-check-circle"></i> Quick search by name or ID</li>
+                <li><i class="fa-solid fa-check-circle"></i> Secure cloud storage</li>
+                <li><i class="fa-solid fa-check-circle"></i> One-click history export</li>
+            </ul>
+        </div>
+        <div class="feature-image">
+            <img src="../images/d2.png" alt="Patient Records Interface" class="real-img">
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <h2>Ready to upgrade your hospital?</h2>
+        <p>Join 500+ modern hospitals using our PMS today.</p>
+        <button>Get Started for Free</button>
+    </section>
+
+     <style>
+    .pms-footer {
+        background-color: #0F172A; /* Dark Theme Bg */
+        color: #9CA3AF; /* Gray Text */
+        padding: 1.5rem 5%;
+        font-family: 'Inter', sans-serif;
+        border-top: 1px solid #1E293B;
+        font-size: 0.9rem;
+    }
+
+    .footer-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .footer-center {
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .footer-center strong {
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .footer-links a {
+        color: #9CA3AF;
+        text-decoration: none;
+        margin-left: 20px;
+        transition: 0.3s;
+    }
+
+    .footer-links a:hover {
+        color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+        .footer-container {
+            flex-direction: column;
+            text-align: center;
+        }
+        .footer-links a {
+            margin: 0 10px;
+        }
+    }
+</style>
+
+<footer class="pms-footer">
+    <div class="footer-container">
+        
+        <div class="footer-left">
+            &copy; 2026 PMS. All rights reserved.
+        </div>
+
+        <a href="https://codedclouds.org">
+            <div class="footer-center">
+            Powered by <strong>CODED CLOUDS</strong> <i class="fa-solid fa-bolt"></i>
+        </div>
+        </a>
+
+        <div class="footer-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+        </div>
+
+    </div>
+</footer>
+
+</body>
+</html>
