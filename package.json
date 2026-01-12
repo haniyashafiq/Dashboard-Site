@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/seeds/planSeeder.js"
+    "seed": "node src/seeds/planSeeder.js",
+    "check": "node check-config.js"
   },
   "keywords": [
     "patient-management",

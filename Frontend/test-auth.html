@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth Test Page - PMS</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 800px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        color: #4f46e5;
+        margin-bottom: 10px;
+      }
+
+      .status {
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-weight: 600;
+      }
+
+      .status.success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 2px solid #10b981;
+      }
+
+      .status.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 2px solid #ef4444;
+      }
+
+      .section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 10px;
+      }
+
+      .section h2 {
+        color: #374151;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      button {
+        background: #4f46e5;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: #4338ca;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+      }
+
+      button.secondary {
+        background: #6b7280;
+      }
+
+      button.secondary:hover {
+        background: #4b5563;
+      }
+
+      pre {
+        background: #1f2937;
+        color: #10b981;
+        padding: 15px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .info {
+        background: #dbeafe;
+        border: 2px solid #3b82f6;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        color: #1e40af;
+      }
+
+      .links {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .links a {
+        padding: 10px 20px;
+        background: #4f46e5;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .links a:hover {
+        background: #4338ca;
+        transform: translateY(-2px);
+      }
+    </style>
+    <link rel="stylesheet" href="../css/notifications.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Authentication Test Page</h1>
+      <p style="color: #6b7280; margin-bottom: 20px">
+        Test your frontend-backend authentication integration
+      </p>
+
+      <div class="info">
+        <strong>ℹ️ Instructions:</strong><br />
+        1. Make sure your backend server is running on <code>http://localhost:5000</code><br />
+        2. Use the buttons below to test different authentication features<br />
+        3. Check the results in the sections below
+      </div>
+
+      <!-- Status Display -->
+      <div id="status"></div>
+
+      <!-- Test Actions -->
+      <div class="section">
+        <h2>🧪 Test Actions</h2>
+        <button onclick="testBackendConnection()">Test Backend Connection</button>
+        <button onclick="testRegister()">Test Registration</button>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testGetProfile()">Test Get Profile (Protected)</button>
+        <button onclick="checkAuthStatus()" class="secondary">Check Auth Status</button>
+        <button onclick="clearToken()" class="secondary">Clear Token</button>
+      </div>
+
+      <!-- Current Status -->
+      <div class="section">
+        <h2>📊 Current Status</h2>
+        <div id="authStatus" style="padding: 10px; background: white; border-radius: 5px">
+          Loading...
+        </div>
+      </div>
+
+      <!-- Response Display -->
+      <div class="section">
+        <h2>📥 Last Response</h2>
+        <pre id="response">No response yet. Click a test button above.</pre>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="links">
+        <a href="./comp/Login.html">Go to Login Page</a>
+        <a href="./comp/Signup.html">Go to Signup Page</a>
+      </div>
+    </div>
+
+    <script src="./js/auth.js"></script>
+    <script>
+      // Update auth status on load
+      document.addEventListener('DOMContentLoaded', () => {
+        updateAuthStatus();
+      });
+
+      function updateAuthStatus() {
+        const authStatus = document.getElementById('authStatus');
+        const token = getAuthToken();
+
+        if (token) {
+          authStatus.innerHTML = `
+                    <strong style="color: #10b981;">✓ Authenticated</strong><br>
+                    <small style="color: #6b7280;">Token: ${token.substring(0, 30)}...</small>
+                `;
+        } else {
+          authStatus.innerHTML = `
+                    <strong style="color: #ef4444;">✗ Not Authenticated</strong><br>
+                    <small style="color: #6b7280;">No token found in localStorage</small>
+                `;
+        }
+      }
+
+      function displayResponse(data, success = true) {
+        const responseEl = document.getElementById('response');
+        const statusEl = document.getElementById('status');
+
+        responseEl.textContent = JSON.stringify(data, null, 2);
+
+        if (success) {
+          statusEl.className = 'status success';
+          statusEl.textContent = '✓ Request successful!';
+          showSuccess('Request completed successfully');
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '✗ Request failed!';
+          showError('Request failed. Check response below.');
+        }
+
+        updateAuthStatus();
+      }
+
+      async function testBackendConnection() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/../health`);
+          const data = await response.json();
+          displayResponse({ status: response.status, data }, response.ok);
+        } catch (error) {
+          displayResponse({ error: error.message }, false);
+        }
+      }
+
+      async function testRegister() {
+        const testEmail = `test${Date.now()}@example.com`;
+        const testData = {
+          email: testEmail,
+          password: 'Test1234!',
+          companyName: 'Test Clinic',
+          planType: 'basic',
+        };
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testData),
+          });
+
+          const data = await response.json();
+
+          if (data.token) {
+            saveAuthToken(data.token);
+          }
+
+          displayResponse(
+            {
+              status: response.status,
+              testData,
+              response: data,
+            },
+            response.ok
+          );
+        } catch (error) {
+          displayResponse({ error: error.message }, false);
+        }
+      }
+
+      async function testLogin() {
+        // You'll need to use credentials from a registered user
+        const email = prompt('Enter email:');
+        const password = prompt('Enter password:');
+
+        if (!email || !password) {
+          showError('Email and password required');
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (data.token) {
+            saveAuthToken(data.token);
+          }
+
+          displayResponse(
+            {
+              status: response.status,
+              response: data,
+            },
+            response.ok
+          );
+        } catch (error) {
+          displayResponse({ error: error.message }, false);
+        }
+      }
+
+      async function testGetProfile() {
+        if (!isAuthenticated()) {
+          showError('Please login first!');
+          return;
+        }
+
+        try {
+          const response = await authenticatedFetch(`${API_BASE_URL}/auth/profile`);
+          const data = await response.json();
+          displayResponse(
+            {
+              status: response.status,
+              response: data,
+            },
+            response.ok
+          );
+        } catch (error) {
+          displayResponse({ error: error.message }, false);
+        }
+      }
+
+      function checkAuthStatus() {
+        const token = getAuthToken();
+        const authenticated = isAuthenticated();
+
+        displayResponse(
+          {
+            authenticated,
+            token: token ? `${token.substring(0, 50)}...` : null,
+            tokenLength: token ? token.length : 0,
+            localStorage: {
+              authToken: localStorage.getItem('authToken') ? 'Present' : 'Not found',
+            },
+          },
+          true
+        );
+      }
+
+      function clearToken() {
+        removeAuthToken();
+        showSuccess('Token cleared from localStorage');
+        updateAuthStatus();
+        displayResponse({ message: 'Token cleared successfully' }, true);
+      }
+    </script>
+  </body>
+</html>
