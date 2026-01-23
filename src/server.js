@@ -12,7 +12,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      'https://pms-frontend-zgdy.onrender.com', // Production frontend (update with your actual URL)
+      'https://dashboard-site-qbgb.onrender.com', // Production frontend 
       'http://localhost:3000', // Local development
       'http://127.0.0.1:3000', // Local development alternative
       'http://localhost:5500', // Live Server default port
