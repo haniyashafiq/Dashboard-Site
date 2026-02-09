@@ -1,17 +1,5 @@
-// API Configuration - Auto-detect environment
-const API_BASE_URL = (() => {
-  const hostname = window.location.hostname;
-
-  // Check if running locally
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
-    return 'http://localhost:5000/api';
-  }
-
-  // Production URL
-  return 'https://pms-backend-zgdy.onrender.com/api';
-})();
-
-console.log('🌐 API URL:', API_BASE_URL);
+// API Configuration
+const API_BASE_URL = 'http://localhost:5000/api';
 
 // Toast Notification System
 let toastContainer = null;
