@@ -4,7 +4,7 @@ const planSchema = new mongoose.Schema(
   {
     planType: {
       type: String,
-      enum: ['white-label', 'subscription', 'one-time'],
+      enum: ['white-label', 'subscription', 'one-time', 'basic'],
       required: true,
       unique: true,
     },

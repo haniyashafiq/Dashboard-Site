@@ -7,11 +7,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const planParam = urlParams.get('plan');
   const tierParam = urlParams.get('tier');
-  const planName = urlParams.get('planName') || 'Monthly Subscription';
+  const planName = urlParams.get('planName') || 'Basic Plan';
+  const price = urlParams.get('price');
+  const productId = urlParams.get('product') || 'hospital-pms';
+
+  // Map product IDs to software names
+  const productNames = {
+    'hospital-pms': 'Hospital PMS',
+    'pharmacy-pos': 'Pharmacy POS',
+    'lab-reporting': 'Lab Reporting',
+    'quick-invoice': 'Quick Invoice',
+    'private-clinic-lite': 'Private Clinic Lite',
+  };
+  const softwareName = productNames[productId] || 'Hospital PMS';
 
   // Map pricing page parameters to backend plan types
+  // Valid plan types: 'subscription', 'one-time', 'white-label', 'basic'
   let selectedPlan = 'subscription'; // default
-  if (tierParam === 'outright' || tierParam === 'lifetime') {
+
+  if (planParam === 'basic') {
+    selectedPlan = 'basic';
+  } else if (tierParam === 'outright' || tierParam === 'lifetime' || planParam === 'one-time') {
     selectedPlan = 'one-time';
   } else if (planParam === 'white-label' || planParam === 'whitelabel') {
     selectedPlan = 'white-label';
@@ -20,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Display selected plan if provided
-  displaySelectedPlan(planName);
+  displaySelectedPlan(softwareName, planName, price);
 
   const signupForm = document.querySelector('form');
   const submitButton = signupForm.querySelector('.btn-login');
@@ -72,15 +88,27 @@ document.addEventListener('DOMContentLoaded', () => {
           email,
           password,
           companyName,
-          planType: selectedPlan, // Use plan from URL or default to basic
+          planType: selectedPlan,
+          productId: productId, // Use the extracted productId variable
         }),
       });
 
-      const data = await response.json();
+      // Try to parse JSON, but handle cases where response isn't JSON
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // If not JSON, treat as text error
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status} ${response.statusText}`);
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
+
+      const token = data.data ? data.data.token : null;
 
       // Save token if returned
       if (data.data && data.data.token) {
@@ -92,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Redirect to dashboard
       setTimeout(() => {
-        window.location.href = '../../index.html';
+        window.location.href = '/comp/dashboard.html';
       }, 1500);
     } catch (error) {
       console.error('Signup error:', error);
@@ -106,13 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Display selected plan information
-function displaySelectedPlan(planName) {
+function displaySelectedPlan(softwareName, planName, price) {
   const planInfoElement = document.getElementById('selectedPlanInfo');
-  if (planInfoElement && planName !== 'Basic Plan') {
+  if (planInfoElement) {
     planInfoElement.innerHTML = `
       <div style="background: #EEF2FF; border: 2px solid #4F46E5; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;">
         <i class="fa-solid fa-check-circle" style="color: #4F46E5; font-size: 20px;"></i>
-        <p style="margin: 8px 0 0 0; color: #374151; font-weight: 600;">Selected Plan: <strong style="color: #4F46E5;">${planName}</strong></p>
+        <p style="margin: 8px 0 0 0; color: #374151; font-weight: 600;">Subscribing to: <strong style="color: #4F46E5;">${softwareName}</strong></p>
+        <p style="margin: 5px 0 0 0; color: #6B7280; font-size: 14px;">Plan: <strong>${planName}</strong></p>
+        ${price ? `<p style="margin: 5px 0 0 0; color: #6B7280; font-size: 14px;">Price: <strong style="color: #4F46E5;">PKR ${price}</strong></p>` : ''}
       </div>
     `;
     planInfoElement.style.display = 'block';

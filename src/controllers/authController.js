@@ -11,13 +11,13 @@ const { generateToken } = require('../utils/jwt');
  */
 const register = async (req, res) => {
   try {
-    const { email, password, companyName, phone, address, planType } = req.body;
+    const { email, password, companyName, phone, address, planType, productId } = req.body;
 
     // Validate required fields
-    if (!email || !password || !companyName || !planType) {
+    if (!email || !password || !companyName || !planType || !productId) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email, password, company name, and plan type',
+        message: 'Please provide email, password, company name, plan type, and product ID',
       });
     }
 
@@ -62,6 +62,7 @@ const register = async (req, res) => {
       subscriptionStatus: 'trial',
       trialStartDate,
       trialEndDate,
+      productId,
       isActive: true,
     });
 
@@ -165,6 +166,7 @@ const login = async (req, res) => {
           subscriptionStatus: user.subscriptionStatus,
           trialEndDate: user.trialEndDate,
           tenantDbName: user.tenantDbName,
+          productId: user.productId,
         },
       },
     });
@@ -210,6 +212,7 @@ const getProfile = async (req, res) => {
           trialStartDate: user.trialStartDate,
           trialEndDate: user.trialEndDate,
           tenantDbName: user.tenantDbName,
+          productId: user.productId,
           isActive: user.isActive,
           createdAt: user.createdAt,
         },

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { connectTenantDB } = require('../config/database');
+const schemas = require('../models/tenantSchemas');
 
 /**
  * Generate a unique tenant database name
@@ -21,6 +22,7 @@ const generateTenantDbName = (companyName) => {
 
 /**
  * Create a new tenant database with initial schema
+ * Uses centralized schemas from tenantSchemas.js to avoid duplication
  * @param {string} tenantDbName - The name of the tenant database
  * @returns {Object} - Contains connection info
  */
@@ -29,74 +31,27 @@ const createTenantDatabase = async (tenantDbName) => {
     // Create connection to the new tenant database
     const tenantConnection = connectTenantDB(tenantDbName);
 
-    // Define initial schemas for the tenant database
-    // These are basic placeholder collections that will be used during the trial
-    const patientSchema = new mongoose.Schema({
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-      email: String,
-      phone: String,
-      dateOfBirth: Date,
-      address: String,
-      medicalHistory: String,
-      isActive: { type: Boolean, default: true },
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    });
+    // Create models using centralized schemas from tenantSchemas.js
+    // Core Models
+    const Patient = tenantConnection.model('Patient', schemas.patientSchema);
+    const Appointment = tenantConnection.model('Appointment', schemas.appointmentSchema);
+    const Staff = tenantConnection.model('Staff', schemas.staffSchema);
+    const Settings = tenantConnection.model('Settings', schemas.settingsSchema);
 
-    const appointmentSchema = new mongoose.Schema({
-      patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
-      appointmentDate: { type: Date, required: true },
-      appointmentType: String,
-      duration: Number, // in minutes
-      status: {
-        type: String,
-        enum: ['scheduled', 'completed', 'cancelled', 'no-show'],
-        default: 'scheduled',
-      },
-      notes: String,
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    });
+    // Pharmacy Models
+    const Inventory = tenantConnection.model('Inventory', schemas.inventorySchema);
+    const Sale = tenantConnection.model('Sale', schemas.saleSchema);
+    const Supplier = tenantConnection.model('Supplier', schemas.supplierSchema);
+    const StockMovement = tenantConnection.model('StockMovement', schemas.stockMovementSchema);
+    const PurchaseOrder = tenantConnection.model('PurchaseOrder', schemas.purchaseOrderSchema);
 
-    const staffSchema = new mongoose.Schema({
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-      email: { type: String, required: true, unique: true },
-      role: {
-        type: String,
-        enum: ['admin', 'doctor', 'therapist', 'nurse', 'receptionist'],
-        default: 'staff',
-      },
-      phone: String,
-      isActive: { type: Boolean, default: true },
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    });
-
-    const settingsSchema = new mongoose.Schema({
-      clinicName: { type: String, required: true },
-      clinicAddress: String,
-      clinicPhone: String,
-      clinicEmail: String,
-      businessHours: {
-        monday: { open: String, close: String },
-        tuesday: { open: String, close: String },
-        wednesday: { open: String, close: String },
-        thursday: { open: String, close: String },
-        friday: { open: String, close: String },
-        saturday: { open: String, close: String },
-        sunday: { open: String, close: String },
-      },
-      timezone: { type: String, default: 'UTC' },
-      updatedAt: { type: Date, default: Date.now },
-    });
-
-    // Create models in the tenant database
-    const Patient = tenantConnection.model('Patient', patientSchema);
-    const Appointment = tenantConnection.model('Appointment', appointmentSchema);
-    const Staff = tenantConnection.model('Staff', staffSchema);
-    const Settings = tenantConnection.model('Settings', settingsSchema);
+    // Accounting Models
+    const Invoice = tenantConnection.model('Invoice', schemas.invoiceSchema);
+    const Payment = tenantConnection.model('Payment', schemas.paymentSchema);
+    const Revenue = tenantConnection.model('Revenue', schemas.revenueSchema);
+    const Expense = tenantConnection.model('Expense', schemas.expenseSchema);
+    const AccountLedger = tenantConnection.model('AccountLedger', schemas.accountLedgerSchema);
+    const TaxRecord = tenantConnection.model('TaxRecord', schemas.taxRecordSchema);
 
     // Wait for connection to be established
     await new Promise((resolve, reject) => {
@@ -108,10 +63,26 @@ const createTenantDatabase = async (tenantDbName) => {
     // This ensures the database and collections are physically created in MongoDB
     console.log(`✓ Creating collections for tenant: ${tenantDbName}`);
 
+    // Core collections
     await Patient.createCollection();
     await Appointment.createCollection();
     await Staff.createCollection();
     await Settings.createCollection();
+
+    // Pharmacy collections
+    await Inventory.createCollection();
+    await Sale.createCollection();
+    await Supplier.createCollection();
+    await StockMovement.createCollection();
+    await PurchaseOrder.createCollection();
+
+    // Accounting collections
+    await Invoice.createCollection();
+    await Payment.createCollection();
+    await Revenue.createCollection();
+    await Expense.createCollection();
+    await AccountLedger.createCollection();
+    await TaxRecord.createCollection();
 
     const tenantDbUrl = `${process.env.MONGO_TENANT_BASE_URI}/${tenantDbName}`;
 

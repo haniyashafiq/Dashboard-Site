@@ -7,10 +7,7 @@ require('dotenv').config();
  */
 const connectMasterDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_MASTER_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_MASTER_URI);
     console.log('✓ Connected to Master Database');
   } catch (error) {
     console.error('✗ Master Database connection error:', error.message);
@@ -27,10 +24,7 @@ const connectMasterDB = async () => {
 const connectTenantDB = (tenantDbName) => {
   try {
     const tenantDbUri = `${process.env.MONGO_TENANT_BASE_URI}/${tenantDbName}`;
-    const tenantConnection = mongoose.createConnection(tenantDbUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const tenantConnection = mongoose.createConnection(tenantDbUri);
 
     tenantConnection.on('connected', () => {
       console.log(`✓ Connected to Tenant Database: ${tenantDbName}`);

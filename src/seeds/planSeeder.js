@@ -77,6 +77,19 @@ const seedPlans = async () => {
         trialDays: 3,
         isActive: true,
       },
+      {
+        planType: 'basic',
+        planName: 'Basic Plan',
+        price: 0,
+        billingCycle: 'monthly',
+        features: [
+          'Basic patient records',
+          'Single user access',
+          'Community support',
+        ],
+        trialDays: 3,
+        isActive: true,
+      },
     ];
 
     // Insert plans

@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = window.location.origin + '/api';
 
 // Toast Notification System
 let toastContainer = null;
@@ -51,15 +51,15 @@ const showInfo = (message) => {
 
 // Token Management
 const saveAuthToken = (token) => {
-  localStorage.setItem('authToken', token);
+  sessionStorage.setItem('authToken', token);
 };
 
 const getAuthToken = () => {
-  return localStorage.getItem('authToken');
+  return sessionStorage.getItem('authToken');
 };
 
 const removeAuthToken = () => {
-  localStorage.removeItem('authToken');
+  sessionStorage.removeItem('authToken');
 };
 
 // Check if user is authenticated
@@ -98,7 +98,7 @@ const authenticatedFetch = async (url, options = {}) => {
   // If unauthorized, logout user
   if (response.status === 401) {
     removeAuthToken();
-    window.location.href = './comp/Login.html';
+    window.location.href = '/Frontend/comp/Login.html';
     throw new Error('Session expired. Please login again.');
   }
 

@@ -1,9 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const { connectMasterDB } = require('./config/database');
 const authRoutes = require('./routes/auth');
+const patientsRoutes = require('./routes/patients');
+const appointmentsRoutes = require('./routes/appointments');
+const staffRoutes = require('./routes/staff');
+const pharmacyRoutes = require('./routes/pharmacy');
+const accountingRoutes = require('./routes/accounting');
 
 // Initialize Express app
 const app = express();
@@ -12,7 +18,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      'https://dashboard-site-qbgb.onrender.com', // Production frontend 
+      'https://dashboard-site-qbgb.onrender.com', // Production frontend
       'http://localhost:3000', // Local development
       'http://127.0.0.1:3000', // Local development alternative
       'http://localhost:5500', // Live Server default port
@@ -27,8 +33,13 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Routes (API routes MUST come before static files)
 app.use('/api/auth', authRoutes);
+app.use('/api/patients', patientsRoutes);
+app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/pharmacy', pharmacyRoutes);
+app.use('/api/accounting', accountingRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -38,6 +49,10 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Serve static files from Frontend directory only (security: don't expose root)
+// IMPORTANT: This must come AFTER API routes to avoid conflicts
+app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // 404 handler
 app.use((req, res) => {
