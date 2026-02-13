@@ -70,14 +70,14 @@ const isAuthenticated = () => {
 // Redirect to dashboard if already logged in
 const checkAuthAndRedirect = () => {
   if (isAuthenticated()) {
-    window.location.href = '/Frontend/comp/dashboard.html';
+    window.location.href = '../../index.html'; // Redirect to main page or dashboard
   }
 };
 
 // Logout function
 const logout = () => {
   removeAuthToken();
-  window.location.href = '/Frontend/comp/Login.html';
+  window.location.href = './Login.html';
 };
 
 // Make authenticated API requests

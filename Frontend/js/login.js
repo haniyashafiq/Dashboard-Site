@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Redirect to dashboard
       setTimeout(() => {
-        window.location.href = '/Frontend/comp/dashboard.html';
+        window.location.href = '../../index.html'; // Redirect to main dashboard
       }, 1000);
     } catch (error) {
       console.error('Login error:', error);
