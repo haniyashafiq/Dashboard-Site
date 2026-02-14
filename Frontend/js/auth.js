@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = window.location.origin + '/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 // Toast Notification System
 let toastContainer = null;
@@ -70,7 +70,7 @@ const isAuthenticated = () => {
 // Redirect to dashboard if already logged in
 const checkAuthAndRedirect = () => {
   if (isAuthenticated()) {
-    window.location.href = '../../index.html'; // Redirect to main page or dashboard
+    window.location.href = './dashboard.html'; // Redirect to dashboard
   }
 };
 
@@ -98,7 +98,7 @@ const authenticatedFetch = async (url, options = {}) => {
   // If unauthorized, logout user
   if (response.status === 401) {
     removeAuthToken();
-    window.location.href = '/Frontend/comp/Login.html';
+    window.location.href = './Login.html';
     throw new Error('Session expired. Please login again.');
   }
 

@@ -208,6 +208,12 @@ const validateInventoryInput = (req, res, next) => {
 
   // Sanitize strings
   if (name) req.body.name = sanitizeString(name);
+  if (req.body.sku) {
+    req.body.sku = sanitizeString(req.body.sku);
+    if (req.body.sku === '') {
+      delete req.body.sku; // Let it be undefined so sparse index works
+    }
+  }
   if (req.body.description) req.body.description = sanitizeString(req.body.description);
 
   // Validate prices

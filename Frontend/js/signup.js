@@ -118,9 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show success message
       showSuccess('Account created successfully! Redirecting...');
 
-      // Redirect to dashboard
+      // Redirect to dashboard (relative to current file: comp/Signup.html -> comp/dashboard.html)
       setTimeout(() => {
-        window.location.href = '/comp/dashboard.html';
+        window.location.href = './dashboard.html';
       }, 1500);
     } catch (error) {
       console.error('Signup error:', error);

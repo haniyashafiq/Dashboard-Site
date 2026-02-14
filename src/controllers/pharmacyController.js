@@ -13,7 +13,7 @@ const getAllItems = async (req, res) => {
         const Inventory = req.tenantModels.Inventory;
         const { status, category, lowStock } = req.query;
 
-        let query = {};
+        let query = { isActive: { $ne: false } };
         if (status) query.status = status;
         if (category) query.category = category;
         if (lowStock === 'true') {
@@ -79,8 +79,11 @@ const createItem = async (req, res) => {
         const Inventory = req.tenantModels.Inventory;
         const itemData = req.body;
 
-        // Validate required fields
-        if (!itemData.name || !itemData.costPrice || !itemData.sellingPrice) {
+        console.log(`[Pharmacy] Creating item for tenant context`);
+        console.log('Item data received:', JSON.stringify(itemData, null, 2));
+
+        // Validate required fields (use undefined checks for numbers to allow 0)
+        if (!itemData.name || itemData.costPrice === undefined || itemData.sellingPrice === undefined) {
             return res.status(400).json({
                 success: false,
                 message: 'Name, cost price, and selling price are required',
@@ -98,9 +101,11 @@ const createItem = async (req, res) => {
             }
         }
 
-        // Calculate profit margin
-        if (itemData.costPrice && itemData.sellingPrice) {
-            itemData.profitMargin = ((itemData.sellingPrice - itemData.costPrice) / itemData.costPrice * 100).toFixed(2);
+        // Calculate profit margin safely
+        if (itemData.costPrice > 0 && itemData.sellingPrice) {
+            itemData.profitMargin = parseFloat(((itemData.sellingPrice - itemData.costPrice) / itemData.costPrice * 100).toFixed(2));
+        } else {
+            itemData.profitMargin = 0;
         }
 
         const newItem = new Inventory(itemData);
@@ -131,12 +136,17 @@ const updateItem = async (req, res) => {
         const updateData = req.body;
 
         // Recalculate profit margin if prices changed
-        if (updateData.costPrice || updateData.sellingPrice) {
+        if (updateData.costPrice !== undefined || updateData.sellingPrice !== undefined) {
             const item = await Inventory.findById(id);
             if (item) {
-                const costPrice = updateData.costPrice || item.costPrice;
-                const sellingPrice = updateData.sellingPrice || item.sellingPrice;
-                updateData.profitMargin = ((sellingPrice - costPrice) / costPrice * 100).toFixed(2);
+                const costPrice = updateData.costPrice !== undefined ? updateData.costPrice : item.costPrice;
+                const sellingPrice = updateData.sellingPrice !== undefined ? updateData.sellingPrice : item.sellingPrice;
+
+                if (costPrice > 0) {
+                    updateData.profitMargin = parseFloat(((sellingPrice - costPrice) / costPrice * 100).toFixed(2));
+                } else {
+                    updateData.profitMargin = 0;
+                }
             }
         }
 
@@ -209,102 +219,20 @@ const deleteItem = async (req, res) => {
 // ==================== SALES MANAGEMENT ====================
 
 /**
- * Record a medicine sale
+ * Record a single medicine sale
  */
 const recordSale = async (req, res) => {
     try {
-        const { Sale, Inventory, StockMovement } = req.tenantModels;
-        const { medicineId, quantity, discount = 0, paymentMethod, customerId, customerName, soldBy, notes } = req.body;
-
+        const { medicineId, quantity } = req.body;
         if (!medicineId || !quantity) {
             return res.status(400).json({
                 success: false,
                 message: 'Medicine ID and quantity are required',
             });
         }
-
-        // Get medicine details
-        const medicine = await Inventory.findById(medicineId);
-        if (!medicine) {
-            return res.status(404).json({
-                success: false,
-                message: 'Medicine not found',
-            });
-        }
-
-        // Check stock availability
-        if (medicine.quantity < quantity) {
-            return res.status(400).json({
-                success: false,
-                message: `Insufficient stock. Available: ${medicine.quantity}`,
-            });
-        }
-
-        // Calculate amounts
-        const unitPrice = medicine.sellingPrice;
-        const costPrice = medicine.costPrice;
-        const subtotal = unitPrice * quantity;
-        const taxAmount = (subtotal * (medicine.taxRate || 0)) / 100;
-        const totalAmount = subtotal + taxAmount - discount;
-        const profit = (unitPrice - costPrice) * quantity - discount;
-
-        // Generate invoice number
-        const saleCount = await Sale.countDocuments();
-        const invoiceNumber = `INV-${Date.now()}-${saleCount + 1}`;
-
-        // Create sale record
-        const newSale = new Sale({
-            medicineId,
-            medicineName: medicine.name,
-            quantity,
-            unitPrice,
-            costPrice,
-            totalAmount,
-            discount,
-            taxAmount,
-            profit,
-            paymentMethod,
-            customerId,
-            customerName,
-            soldBy,
-            invoiceNumber,
-            notes
-        });
-
-        await newSale.save();
-
-        // Update medicine stock
-        const previousStock = medicine.quantity;
-        medicine.quantity -= quantity;
-        if (medicine.quantity === 0) {
-            medicine.status = 'out-of-stock';
-        }
-        await medicine.save();
-
-        // Record stock movement
-        const stockMovement = new StockMovement({
-            medicineId,
-            medicineName: medicine.name,
-            type: 'sale',
-            quantity: -quantity,
-            previousStock,
-            newStock: medicine.quantity,
-            referenceId: newSale._id,
-            referenceType: 'Sale',
-            performedBy: soldBy,
-            notes: `Sale: ${invoiceNumber}`
-        });
-
-        await stockMovement.save();
-
-        res.status(201).json({
-            success: true,
-            message: 'Sale recorded successfully',
-            data: {
-                sale: newSale,
-                updatedStock: medicine.quantity
-            }
-        });
+        // Alias to bulk sale for consistency
+        req.body.items = [{ medicineId, quantity }];
+        return recordBulkSale(req, res);
     } catch (error) {
         console.error('Record sale error:', error);
         res.status(500).json({
@@ -316,14 +244,168 @@ const recordSale = async (req, res) => {
 };
 
 /**
+ * Record a bulk medicine sale (multi-item)
+ */
+const recordBulkSale = async (req, res) => {
+    try {
+        const { Sale, Inventory, StockMovement } = req.tenantModels;
+        const { items, paymentMethod, customerId, customerName, soldBy, notes, discount = 0 } = req.body;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Items array is required',
+            });
+        }
+
+        // Generate a single invoice number for the entire transaction
+        const saleCount = await Sale.countDocuments();
+        const invoiceNumber = `INV-B-${Date.now()}-${saleCount + 1}`;
+
+        const saleResults = [];
+        let grandTotal = 0;
+        let totalProfit = 0;
+
+        // Process each item
+        for (const item of items) {
+            const { medicineId, quantity } = item;
+
+            if (!medicineId || !quantity) continue;
+
+            // Get medicine details
+            const medicine = await Inventory.findById(medicineId);
+            if (!medicine) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Medicine not found for ID: ${medicineId}`,
+                });
+            }
+
+            // Check stock availability
+            if (medicine.quantity < quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient stock for ${medicine.name}. Available: ${medicine.quantity}`,
+                });
+            }
+
+            // Calculate amounts
+            const unitPrice = medicine.sellingPrice;
+            const costPrice = medicine.costPrice;
+            const subtotal = unitPrice * quantity;
+            const taxAmount = (subtotal * (medicine.taxRate || 0)) / 100;
+            const totalAmount = subtotal + taxAmount;
+            const profit = (unitPrice - costPrice) * quantity;
+
+            grandTotal += totalAmount;
+            totalProfit += profit;
+
+            // Create individual sale record (keeping current schema)
+            const newSale = new Sale({
+                medicineId,
+                medicineName: medicine.name,
+                quantity,
+                unitPrice,
+                costPrice,
+                totalAmount,
+                discount: 0, // Individual discounts not handled yet
+                taxAmount,
+                profit,
+                paymentMethod,
+                customerId,
+                customerName,
+                soldBy,
+                invoiceNumber,
+                notes
+            });
+
+            await newSale.save();
+
+            // Update medicine stock
+            const previousStock = medicine.quantity;
+            medicine.quantity -= quantity;
+            if (medicine.quantity === 0) {
+                medicine.status = 'out-of-stock';
+            }
+            await medicine.save();
+
+            // Record stock movement
+            const stockMovement = new StockMovement({
+                medicineId,
+                medicineName: medicine.name,
+                type: 'sale',
+                quantity: -quantity,
+                previousStock,
+                newStock: medicine.quantity,
+                referenceId: newSale._id,
+                referenceType: 'Sale',
+                performedBy: soldBy,
+                notes: `Bulk Sale: ${invoiceNumber}`
+            });
+
+            await stockMovement.save();
+            saleResults.push(newSale);
+        }
+
+        // Apply global discount to the summary (for response)
+        const finalTotal = grandTotal - discount;
+
+        // NEW: Record Revenue for Accounting Module
+        try {
+            const { Revenue } = req.tenantModels;
+            if (Revenue) {
+                const revenueRecord = new Revenue({
+                    source: 'pharmacy-sales',
+                    amount: finalTotal,
+                    category: 'Sales',
+                    description: `Pharmacy Sale: ${invoiceNumber}`,
+                    referenceType: 'Sale',
+                    referenceId: saleResults[0]?._id, // Use first sale as reference for the batch
+                    paymentMethod: paymentMethod?.toLowerCase() || 'cash',
+                    createdBy: soldBy,
+                    date: new Date()
+                });
+                await revenueRecord.save();
+            }
+        } catch (revError) {
+            console.error('Failed to record revenue for sale:', revError);
+            // We don't fail the sale if revenue recording fails, but we log it
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Bulk sale recorded successfully',
+            data: {
+                invoiceNumber,
+                itemsCount: saleResults.length,
+                totalAmount: finalTotal,
+                profit: totalProfit - discount,
+                sales: saleResults
+            }
+        });
+    } catch (error) {
+        console.error('Record bulk sale error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to record bulk sale',
+            error: error.message,
+        });
+    }
+};
+
+/**
  * Get all sales with filters
  */
 const getAllSales = async (req, res) => {
     try {
         const Sale = req.tenantModels.Sale;
-        const { startDate, endDate, medicineId, paymentMethod } = req.query;
+        const { startDate, endDate, medicineId, paymentMethod, invoiceNumber } = req.query;
 
         let query = {};
+
+        if (invoiceNumber) {
+            query.invoiceNumber = invoiceNumber;
+        }
 
         if (startDate || endDate) {
             query.saleDate = {};
@@ -335,7 +417,7 @@ const getAllSales = async (req, res) => {
         if (paymentMethod) query.paymentMethod = paymentMethod;
 
         const sales = await Sale.find(query)
-            .populate('medicineId', 'name sku')
+            .populate('medicineId', 'name sku category')
             .populate('customerId', 'firstName lastName phone')
             .sort({ saleDate: -1 });
 
@@ -400,11 +482,16 @@ const getDailySales = async (req, res) => {
         const Sale = req.tenantModels.Sale;
         const { date } = req.params;
 
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
+        // Parse date as local midnight
+        const dateParts = date.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1;
+        const day = parseInt(dateParts[2]);
 
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
+        const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
+
+        console.log(`[Pharmacy] Fetching sales for ${date}: Range ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
 
         const sales = await Sale.find({
             saleDate: { $gte: startOfDay, $lte: endOfDay }
@@ -448,12 +535,17 @@ const getSalesByDateRange = async (req, res) => {
             });
         }
 
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
         const sales = await Sale.find({
             saleDate: {
                 $gte: new Date(startDate),
-                $lte: new Date(endDate)
+                $lte: endOfDay
             }
         }).populate('medicineId', 'name category');
+
+        console.log(`[Pharmacy] Fetching sales from ${startDate} to ${endDate} (Parsed: ${new Date(startDate).toISOString()} - ${endOfDay.toISOString()})`);
 
         const totalSales = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
         const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
@@ -1277,6 +1369,190 @@ const getInventoryValue = async (req, res) => {
     }
 };
 
+/**
+ * Void an entire sale batch by invoice number
+ */
+const voidSaleBatch = async (req, res) => {
+    try {
+        const { Sale, Inventory, StockMovement, Revenue } = req.tenantModels;
+        const { invoiceNumber } = req.params;
+        const voidedBy = req.user.name || 'Admin';
+
+        // 1. Find all sales in this batch
+        const sales = await Sale.find({ invoiceNumber, status: { $ne: 'voided' } });
+        if (sales.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No active sales found for this invoice number'
+            });
+        }
+
+        let totalRefund = 0;
+
+        // 2. Process each sale: Restock and Record Movement
+        for (const sale of sales) {
+            // Update Inventory
+            const medicine = await Inventory.findById(sale.medicineId);
+            if (medicine) {
+                const previousStock = medicine.quantity;
+                medicine.quantity += sale.quantity;
+                medicine.status = 'active';
+                await medicine.save();
+
+                // Record Stock Movement
+                const movement = new StockMovement({
+                    medicineId: sale.medicineId,
+                    medicineName: sale.medicineName,
+                    type: 'return',
+                    quantity: sale.quantity,
+                    previousStock,
+                    newStock: medicine.quantity,
+                    referenceId: sale._id,
+                    referenceType: 'Sale',
+                    performedBy: voidedBy,
+                    notes: `Voided Invoice: ${invoiceNumber}`
+                });
+                await movement.save();
+            }
+
+            // Mark sale as voided
+            sale.status = 'voided';
+            await sale.save();
+            totalRefund += sale.totalAmount;
+        }
+
+        // 3. Update Accounting (Record negative revenue or delete if preferred, but negative record is better for trails)
+        try {
+            if (Revenue) {
+                const reversal = new Revenue({
+                    source: 'pharmacy-sales',
+                    amount: -totalRefund,
+                    category: 'Sales Reversal',
+                    description: `Voided Invoice: ${invoiceNumber}`,
+                    referenceType: 'Sale',
+                    referenceId: sales[0]._id,
+                    paymentMethod: sales[0].paymentMethod || 'cash',
+                    createdBy: voidedBy,
+                    date: new Date()
+                });
+                await reversal.save();
+            }
+        } catch (accError) {
+            console.error('Failed to update accounting for voided sale:', accError);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Invoice ${invoiceNumber} has been voided and stock restored.`,
+            refundAmount: totalRefund
+        });
+
+    } catch (error) {
+        console.error('Void sale error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to void sale',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Update a specific sale item (Returns/Partial returns)
+ */
+const updateSaleItem = async (req, res) => {
+    try {
+        const { Sale, Inventory, StockMovement, Revenue } = req.tenantModels;
+        const { id } = req.params;
+        const { newQuantity, notes } = req.body;
+        const updatedBy = req.user.name || 'Admin';
+
+        const sale = await Sale.findById(id);
+        if (!sale) {
+            return res.status(404).json({ success: false, message: 'Sale item not found' });
+        }
+
+        if (sale.status === 'voided') {
+            return res.status(400).json({ success: false, message: 'Cannot edit a voided sale' });
+        }
+
+        const quantityDiff = sale.quantity - newQuantity; // Positive if returning items
+        if (quantityDiff === 0) {
+            return res.status(400).json({ success: false, message: 'No change in quantity' });
+        }
+
+        // 1. Update Inventory
+        const medicine = await Inventory.findById(sale.medicineId);
+        if (medicine) {
+            const previousStock = medicine.quantity;
+            medicine.quantity += quantityDiff;
+            medicine.status = medicine.quantity > 0 ? 'active' : 'out-of-stock';
+            await medicine.save();
+
+            // Record Movement
+            const movement = new StockMovement({
+                medicineId: sale.medicineId,
+                medicineName: sale.medicineName,
+                type: quantityDiff > 0 ? 'return' : 'adjustment',
+                quantity: quantityDiff,
+                previousStock,
+                newStock: medicine.quantity,
+                referenceId: sale._id,
+                referenceType: 'Sale',
+                performedBy: updatedBy,
+                notes: notes || `Quantity updated from ${sale.quantity} to ${newQuantity}`
+            });
+            await movement.save();
+        }
+
+        // 2. Update Sale Record
+        const oldTotal = sale.totalAmount;
+        sale.quantity = newQuantity;
+        sale.totalAmount = (sale.unitPrice * newQuantity) + (sale.taxAmount / sale.quantity * newQuantity || 0); // Rough tax proportional adjustment
+        sale.profit = (sale.unitPrice - sale.costPrice) * newQuantity;
+        sale.status = newQuantity === 0 ? 'returned' : 'partially_returned';
+        if (notes) sale.notes = notes;
+        await sale.save();
+
+        const refundAmount = oldTotal - sale.totalAmount;
+
+        // 3. Update Accounting
+        try {
+            if (Revenue && refundAmount !== 0) {
+                const adjustment = new Revenue({
+                    source: 'pharmacy-sales',
+                    amount: -refundAmount,
+                    category: 'Sales Adjustment',
+                    description: `Adjusted Sale ${id}: ${quantityDiff} items returned`,
+                    referenceType: 'Sale',
+                    referenceId: sale._id,
+                    paymentMethod: sale.paymentMethod || 'cash',
+                    createdBy: updatedBy,
+                    date: new Date()
+                });
+                await adjustment.save();
+            }
+        } catch (accError) {
+            console.error('Failed to update accounting for sale adjustment:', accError);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Sale item updated successfully',
+            data: sale,
+            refundAmount
+        });
+
+    } catch (error) {
+        console.error('Update sale item error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update sale item',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     // Medicine/Inventory
     getAllItems,
@@ -1286,10 +1562,13 @@ module.exports = {
     deleteItem,
     // Sales
     recordSale,
+    recordBulkSale,
     getAllSales,
     getSaleById,
     getDailySales,
     getSalesByDateRange,
+    voidSaleBatch,
+    updateSaleItem,
     // Stock Management
     addStock,
     adjustStock,

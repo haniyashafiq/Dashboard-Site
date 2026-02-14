@@ -27,7 +27,8 @@ const testUser = {
   email: `test${Date.now()}@example.com`,
   password: 'TestPassword123!',
   companyName: 'Test Clinic',
-  planType: 'subscription', // Use valid plan type from database
+  planType: 'subscription',
+  productId: 'hospital-pms',
 };
 
 let authToken = null;

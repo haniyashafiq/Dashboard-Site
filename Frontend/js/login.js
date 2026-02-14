@@ -40,15 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Save token
+      // Save token using standard utility
       saveAuthToken(data.data.token);
 
       // Show success message
       showSuccess('Login successful! Redirecting...');
 
-      // Redirect to dashboard
+      // Redirect to dashboard (relative to current file: comp/Login.html -> comp/dashboard.html)
       setTimeout(() => {
-        window.location.href = '../../index.html'; // Redirect to main dashboard
+        window.location.href = './dashboard.html';
       }, 1000);
     } catch (error) {
       console.error('Login error:', error);
