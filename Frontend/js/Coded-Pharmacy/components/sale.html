@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Sales Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-dark': '#0b1118',
+                        'navy-card': '#151f2b',
+                        'primary-blue': '#137fec',
+                        'accent-green': '#10b981',
+                        'accent-rose': '#ef4444'
+                    },
+                    fontFamily: { sans: ['Manrope', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0b1118; color: #e2e8f0; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #137fec33; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-64 bg-[#0d141d] border-r border-slate-800 flex flex-col z-50 transition-transform -translate-x-full lg:translate-x-0">
+        <div class="p-6 flex items-center gap-2">
+            <div class="w-8 h-8 bg-primary-blue rounded flex items-center justify-center">
+                <span class="material-icons-round text-white text-xl">medical_services</span>
+            </div>
+            <span class="text-xl font-bold text-white">Pharma<span class="text-primary-blue">Core</span></span>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1">
+            <div class="text-[10px] uppercase font-bold text-slate-500 mb-2 px-2 mt-4">Main Menu</div>
+            <a href="../index.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">dashboard</span> Dashboard
+            </a>
+            <a href="./Inventory.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">inventory_2</span> Inventory
+            </a>
+            <a href="./sale.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary-blue/10 text-primary-blue font-bold">
+                <span class="material-icons-round text-lg">payments</span> Sales
+            </a>
+            <a href="./accounting.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">account_balance_wallet</span> Accounting
+            </a>
+            <div class="text-[10px] uppercase font-bold text-slate-500 mb-2 px-2 mt-8">Analytics</div>
+            
+            <a href="./setting.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">settings</span> Settings
+            </a>
+        </nav>
+
+        <div class="p-4 m-4 bg-slate-900/50 rounded-xl border border-slate-800">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Support</p>
+            <button class="w-full text-left text-xs text-slate-400 hover:text-white flex items-center gap-2"><span class="material-icons-round text-sm">help_outline</span> Help Center</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-slate-800 bg-navy-dark/80 backdrop-blur-md sticky top-0 z-30">
+            <button class="lg:hidden p-2 text-slate-400" onclick="toggleSidebar()">
+                <span class="material-icons-round">menu</span>
+            </button>
+            <div class="hidden md:block">
+                <h1 class="text-sm font-bold text-white">Sales Analysis</h1>
+                <p class="text-[10px] text-slate-500">Track and manage every transaction</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-lg text-white">
+                    <span class="material-icons-round text-sm">file_download</span> Export
+                </button>
+                <button class="flex items-center gap-2 px-4 py-2 bg-primary-blue hover:bg-blue-600 text-xs font-bold rounded-lg text-white shadow-lg shadow-primary-blue/20">
+                    <span class="material-icons-round text-sm">add</span> New Invoice
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-navy-card p-5 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 bg-primary-blue/10 text-primary-blue rounded-lg"><span class="material-icons-round text-sm">shopping_bag</span></div>
+                        <span class="text-accent-green text-[10px] font-bold">+5.2%</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Orders</p>
+                    <h3 class="text-xl font-black text-white">1,482</h3>
+                </div>
+
+                <div class="bg-navy-card p-5 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 bg-accent-green/10 text-accent-green rounded-lg"><span class="material-icons-round text-sm">monetization_on</span></div>
+                        <span class="text-accent-green text-[10px] font-bold">+18.4%</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Gross Revenue</p>
+                    <h3 class="text-xl font-black text-white">$12,940.50</h3>
+                </div>
+
+                <div class="bg-navy-card p-5 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 bg-purple-500/10 text-purple-400 rounded-lg"><span class="material-icons-round text-sm">analytics</span></div>
+                        <span class="text-slate-500 text-[10px] font-bold">Stable</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Avg. Order Value</p>
+                    <h3 class="text-xl font-black text-white">$42.10</h3>
+                </div>
+
+                <div class="bg-navy-card p-5 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-2 bg-accent-rose/10 text-accent-rose rounded-lg"><span class="material-icons-round text-sm">assignment_return</span></div>
+                        <span class="text-accent-rose text-[10px] font-bold">-2.1%</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Return Rate</p>
+                    <h3 class="text-xl font-black text-white">0.45%</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 bg-navy-card p-6 rounded-2xl border border-slate-800">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-white text-sm">Sales Trend</h3>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1 bg-slate-800 text-[10px] font-bold rounded text-slate-300">Week</button>
+                            <button class="px-3 py-1 bg-primary-blue text-[10px] font-bold rounded text-white">Month</button>
+                        </div>
+                    </div>
+                    <canvas id="salesTrendChart" height="200"></canvas>
+                </div>
+
+                <div class="bg-navy-card p-6 rounded-2xl border border-slate-800">
+                    <h3 class="font-bold text-white text-sm mb-6">Sales by Category</h3>
+                    <canvas id="categoryDonut" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-navy-card rounded-2xl border border-slate-800 overflow-hidden">
+                <div class="p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 class="font-bold text-white text-sm">Recent Transactions</h3>
+                    <div class="relative w-full md:w-64">
+                        <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+                        <input type="text" class="w-full bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-xs" placeholder="Search Invoice #">
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900/30 text-slate-500 text-[10px] uppercase font-bold">
+                            <tr>
+                                <th class="px-6 py-4">Invoice ID</th>
+                                <th class="px-6 py-4">Customer</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Method</th>
+                                <th class="px-6 py-4">Amount</th>
+                                <th class="px-6 py-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs divide-y divide-slate-800">
+                            <tr class="hover:bg-slate-800/20">
+                                <td class="px-6 py-4 text-primary-blue font-bold">#INV-92834</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-bold text-white">Walk-in Customer</p>
+                                    <p class="text-[10px] text-slate-500">2:45 PM Today</p>
+                                </td>
+                                <td class="px-6 py-4"><span class="px-2 py-1 bg-accent-green/10 text-accent-green rounded text-[9px] font-bold uppercase">Paid</span></td>
+                                <td class="px-6 py-4 text-slate-400">Credit Card</td>
+                                <td class="px-6 py-4 font-bold text-white">$142.00</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-slate-500 hover:text-white"><span class="material-icons-round text-sm">visibility</span></button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/20">
+                                <td class="px-6 py-4 text-primary-blue font-bold">#INV-92835</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-bold text-white">Ayesha Khan</p>
+                                    <p class="text-[10px] text-slate-500">1:30 PM Today</p>
+                                </td>
+                                <td class="px-6 py-4"><span class="px-2 py-1 bg-yellow-500/10 text-yellow-500 rounded text-[9px] font-bold uppercase">Pending</span></td>
+                                <td class="px-6 py-4 text-slate-400">Cash</td>
+                                <td class="px-6 py-4 font-bold text-white">$57.50</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-slate-500 hover:text-white"><span class="material-icons-round text-sm">visibility</span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.toggle('hidden');
+        }
+
+        // Sales Trend Chart (Line Chart)
+        const ctxTrend = document.getElementById('salesTrendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['1st', '5th', '10th', '15th', '20th', '25th', '30th'],
+                datasets: [{
+                    label: 'Sales ($)',
+                    data: [3000, 4500, 3200, 6000, 5200, 7500, 8900],
+                    borderColor: '#137fec',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(19, 127, 236, 0.05)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+
+        // Category Chart (Donut)
+        const ctxDonut = document.getElementById('categoryDonut').getContext('2d');
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Tablets', 'Syrups', 'Injections', 'Others'],
+                datasets: [{
+                    data: [45, 25, 15, 15],
+                    backgroundColor: ['#137fec', '#10b981', '#f59e0b', '#334155'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '70%',
+                plugins: { 
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#64748b', font: { size: 10 }, padding: 20 }
+                    } 
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-dark': '#0b1118',
+                        'navy-card': '#151f2b',
+                        'primary-blue': '#137fec',
+                        'accent-green': '#10b981',
+                        'accent-rose': '#ef4444',
+                        'accent-orange': '#f59e0b'
+                    },
+                    fontFamily: { sans: ['Manrope', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0b1118; color: #e2e8f0; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #137fec33; border-radius: 10px; }
+        .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-64 bg-[#0d141d] border-r border-slate-800 flex flex-col z-50 transition-transform -translate-x-full lg:translate-x-0">
+        <div class="p-6 flex items-center gap-2">
+            <div class="w-8 h-8 bg-primary-blue rounded flex items-center justify-center">
+                <span class="material-icons-round text-white text-xl">medical_services</span>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white">Pharma<span class="text-primary-blue">Core</span></span>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1">
+            <div class="text-[10px] uppercase font-bold text-slate-500 mb-2 px-2 mt-4">Main Menu</div>
+            <a href="../index.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">dashboard</span> Dashboard
+            </a>
+            <a href="./Inventory.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary-blue/10 text-primary-blue font-bold">
+                <span class="material-icons-round text-lg">inventory_2</span> Inventory
+            </a>
+            <a href="./sale.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">payments</span>Sales
+            </a>
+            <a href="./accounting.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">account_balance_wallet</span>  Accounting
+            </a>
+            <div class="text-[10px] uppercase font-bold text-slate-500 mb-2 px-2 mt-8">Analytics</div>
+            
+            <a href="./setting.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+                <span class="material-icons-round text-lg">settings</span> Settings
+            </a>
+        </nav>
+
+        <div class="p-4 bg-slate-900/50 m-4 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] text-slate-400">System Status: <span class="text-accent-green">Online</span></span>
+            </div>
+            <div class="flex gap-1">
+                <div class="h-1 flex-1 bg-accent-green rounded-full"></div>
+                <div class="h-1 flex-1 bg-accent-green rounded-full"></div>
+                <div class="h-1 flex-1 bg-slate-700 rounded-full"></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <header class="h-16 flex items-center justify-between px-8 border-b border-slate-800 bg-navy-dark/80 backdrop-blur-md">
+            <button class="lg:hidden p-2 text-slate-400" onclick="toggleSidebar()">
+                <span class="material-icons-round">menu</span>
+            </button>
+            <div class="relative w-96">
+                <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+                <input type="text" class="w-full bg-slate-800/40 border-none rounded-lg py-2 pl-10 pr-4 text-xs" placeholder="Search SKU, medication name or category...">
+            </div>
+            <div class="flex items-center gap-4">
+                
+                <button class="bg-primary-blue hover:bg-blue-600 text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all">
+                    <span class="material-icons-round text-sm">add</span> New Entry
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h1 class="text-xl font-bold text-white">Accounting Snapshot</h1>
+                    <p class="text-xs text-slate-500">Real-time financial overview of inventory</p>
+                </div>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Last Updated: Today, 08:45 AM</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-navy-card p-5 rounded-xl border border-slate-800">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-accent-green/10 text-accent-green rounded-lg"><span class="material-icons-round text-sm">payments</span></div>
+                        <span class="text-accent-green text-[10px] font-bold">+12.4%</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Accounts Receivable</p>
+                    <h3 class="text-lg font-black text-white">$42,850.20</h3>
+                </div>
+                <div class="bg-navy-card p-5 rounded-xl border border-slate-800">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-accent-rose/10 text-accent-rose rounded-lg"><span class="material-icons-round text-sm">outbound</span></div>
+                        <span class="text-accent-rose text-[10px] font-bold">-3.2%</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Accounts Payable</p>
+                    <h3 class="text-lg font-black text-white">$18,420.00</h3>
+                </div>
+                <div class="bg-navy-card p-5 rounded-xl border border-slate-800">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><span class="material-icons-round text-sm">inventory</span></div>
+                        <span class="text-blue-400 text-[10px] font-bold uppercase">Stable</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Inventory Valuation</p>
+                    <h3 class="text-lg font-black text-white">$156,900.50</h3>
+                </div>
+                <div class="bg-primary-blue p-5 rounded-xl shadow-lg shadow-primary-blue/20 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-[10px] font-bold text-blue-100 uppercase mb-1">Net Margin (Monthly)</p>
+                        <h3 class="text-2xl font-black text-white">$24,115.80</h3>
+                        <div class="mt-4 h-1.5 w-full bg-blue-900/30 rounded-full">
+                            <div class="h-full bg-white rounded-full" style="width: 72%"></div>
+                        </div>
+                        <p class="text-[10px] text-blue-100 mt-2 font-bold">72% of Monthly Goal</p>
+                    </div>
+                    <span class="material-icons-round absolute -right-4 -bottom-4 text-8xl text-white/10">trending_up</span>
+                </div>
+            </div>
+
+            <div class="bg-navy-card rounded-2xl border border-slate-800 overflow-hidden mb-8">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-white">Medicine Inventory</h2>
+                        <p class="text-[10px] text-slate-500">Manage stock levels, categories, and expiration dates.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-2 bg-slate-800 text-[10px] font-bold rounded-lg text-slate-300 flex items-center gap-2"><span class="material-icons-round text-sm">filter_list</span> Filter</button>
+                        <button class="px-4 py-2 bg-slate-800 text-[10px] font-bold rounded-lg text-slate-300 flex items-center gap-2"><span class="material-icons-round text-sm">download</span> Export CSV</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900/30 text-slate-500 text-[10px] uppercase font-bold">
+                            <tr>
+                                <th class="px-6 py-4">SKU</th>
+                                <th class="px-6 py-4">Medication Name</th>
+                                <th class="px-6 py-4">Category</th>
+                                <th class="px-6 py-4">Stock Level</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Expiry Date</th>
+                                <th class="px-6 py-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs divide-y divide-slate-800">
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-6 py-4 text-primary-blue font-bold">PH-22091</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-bold text-white leading-none">Amoxicillin 500mg</p>
+                                    <p class="text-[10px] text-slate-500 mt-1">Capsules • 30ct Blister Pack</p>
+                                </td>
+                                <td class="px-6 py-4"><span class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded font-bold uppercase">Antibiotics</span></td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-bold text-white">1,240</span>
+                                        <div class="flex-1 h-1 bg-slate-800 rounded-full min-w-[60px]">
+                                            <div class="h-full bg-accent-green rounded-full" style="width: 80%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4"><span class="text-accent-green flex items-center gap-1 font-bold text-[10px]"><span class="w-1.5 h-1.5 bg-accent-green rounded-full"></span> IN STOCK</span></td>
+                                <td class="px-6 py-4 text-slate-400">Oct 12, 2025</td>
+                                <td class="px-6 py-4 text-center text-slate-500"><span class="material-icons-round text-sm cursor-pointer">more_horiz</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-6 py-4 text-primary-blue font-bold">PH-88231</td>
+                                <td class="px-6 py-4 font-bold text-white">Atorvastatin 20mg</td>
+                                <td class="px-6 py-4"><span class="text-[9px] bg-purple-500/10 text-purple-400 px-2 py-1 rounded font-bold uppercase">Cardiovascular</span></td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-bold text-white">42</span>
+                                        <div class="flex-1 h-1 bg-slate-800 rounded-full min-w-[60px]">
+                                            <div class="h-full bg-accent-rose rounded-full" style="width: 15%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4"><span class="text-accent-rose flex items-center gap-1 font-bold text-[10px]"><span class="w-1.5 h-1.5 bg-accent-rose rounded-full"></span> CRITICAL</span></td>
+                                <td class="px-6 py-4 text-slate-400">Dec 04, 2024</td>
+                                <td class="px-6 py-4 text-center text-slate-500"><span class="material-icons-round text-sm cursor-pointer">more_horiz</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-navy-card p-6 rounded-2xl border border-slate-800">
+                    <h3 class="font-bold text-white mb-6">Pending Requisitions</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-accent-orange/10 text-accent-orange rounded flex items-center justify-center">
+                                    <span class="material-icons-round">local_shipping</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-white">McKesson Corp</p>
+                                    <p class="text-[10px] text-slate-500">Ref: #ORD-99021</p>
+                                </div>
+                            </div>
+                            <span class="font-bold text-white text-xs">$12,440</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-primary-blue/10 text-primary-blue rounded flex items-center justify-center">
+                                    <span class="material-icons-round">local_shipping</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-white">Cardinal Health</p>
+                                    <p class="text-[10px] text-slate-500">Ref: #ORD-22044</p>
+                                </div>
+                            </div>
+                            <span class="font-bold text-white text-xs">$3,150</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-6 py-2 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-400 hover:bg-slate-800 transition-all uppercase">View All Orders</button>
+                </div>
+
+                <div class="lg:col-span-2 bg-navy-card p-6 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-white">Quarterly Performance</h3>
+                        <div class="flex gap-4">
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 bg-primary-blue rounded-full"></span><span class="text-[10px] text-slate-400">Revenue</span></div>
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 bg-slate-700 rounded-full"></span><span class="text-[10px] text-slate-400">Expenses</span></div>
+                        </div>
+                    </div>
+                    <canvas id="quarterlyChart" height="120"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Quarterly Performance Chart
+        const ctx = document.getElementById('quarterlyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                datasets: [
+                    {
+                        label: 'Revenue',
+                        data: [45, 65, 55, 80, 95],
+                        backgroundColor: '#137fec',
+                        borderRadius: 4,
+                        barThickness: 30
+                    },
+                    {
+                        label: 'Expenses',
+                        data: [35, 40, 38, 45, 42],
+                        backgroundColor: '#334155',
+                        borderRadius: 4,
+                        barThickness: 30
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { display: false },
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } }
+                }
+            }
+        });
+    </script>
+    <script>
+        // Sidebar Toggle for Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Charts Initialization
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctxRevenue, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
+                    backgroundColor: '#137fec',
+                    borderRadius: 8,
+                    barThickness: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+
+        const ctxInventory = document.getElementById('inventoryChart').getContext('2d');
+        new Chart(ctxInventory, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [80, 20],
+                    backgroundColor: ['#137fec', '#1e293b'],
+                    borderWidth: 0,
+                    cutout: '85%'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Billing Logic Demo
+        function addRow() {
+            const table = document.getElementById('billTable');
+            const newRow = `
+                <tr class="animate-pulse">
+                    <td class="py-4 font-bold text-white">New Medication <span class="text-[10px] bg-accent-green/10 text-accent-green px-1 rounded ml-2">ADDED</span></td>
+                    <td class="py-4 text-slate-400">#BT-0000</td>
+                    <td class="py-4">
+                        <div class="flex items-center gap-2">
+                            <button class="w-6 h-6 bg-slate-800 rounded">-</button>
+                            <span class="w-4 text-center">1</span>
+                            <button class="w-6 h-6 bg-slate-800 rounded">+</button>
+                        </div>
+                    </td>
+                    <td class="py-4 font-bold">$0.00</td>
+                    <td class="py-4 text-right"><span class="material-icons-round text-slate-600 cursor-pointer">delete</span></td>
+                </tr>
+            `;
+            table.insertAdjacentHTML('beforeend', newRow);
+        }
+    </script>
+</body>
+</html>
