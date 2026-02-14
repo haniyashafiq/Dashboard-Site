@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // Redirect to login if not authenticated
   if (!isAuthenticated()) {
-    window.location.href = './Frontend/comp/Login.html';
+    window.location.href = './Login.html';
     return;
   }
 

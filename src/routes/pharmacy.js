@@ -9,10 +9,13 @@ const {
   deleteItem,
   // Sales
   recordSale,
+  recordBulkSale,
   getAllSales,
   getSaleById,
   getDailySales,
   getSalesByDateRange,
+  voidSaleBatch,
+  updateSaleItem,
   // Stock Management
   addStock,
   adjustStock,
@@ -56,10 +59,13 @@ router.delete('/inventory/:id', validateObjectIdParam, deleteItem);
 
 // ==================== SALES ROUTES ====================
 router.post('/sales', recordSale);
+router.post('/sales/bulk', recordBulkSale);
 router.get('/sales', getAllSales);
-router.get('/sales/:id', getSaleById);
 router.get('/sales/daily/:date', getDailySales);
 router.get('/sales/range', getSalesByDateRange);
+router.get('/sales/:id', getSaleById);
+router.delete('/sales/invoice/:invoiceNumber', voidSaleBatch);
+router.put('/sales/:id', updateSaleItem);
 
 // ==================== STOCK MANAGEMENT ROUTES ====================
 router.post('/stock/add', addStock);

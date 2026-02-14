@@ -72,6 +72,7 @@ const checkAccess = async (req, res, next) => {
       });
     }
 
+
     // Check if user has access
     if (!user.hasAccess()) {
       return res.status(403).json({

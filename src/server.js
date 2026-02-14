@@ -10,6 +10,7 @@ const appointmentsRoutes = require('./routes/appointments');
 const staffRoutes = require('./routes/staff');
 const pharmacyRoutes = require('./routes/pharmacy');
 const accountingRoutes = require('./routes/accounting');
+const settingsRoutes = require('./routes/settings');
 
 // Initialize Express app
 const app = express();
@@ -30,8 +31,8 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes (API routes MUST come before static files)
 app.use('/api/auth', authRoutes);
@@ -40,6 +41,7 @@ app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/pharmacy', pharmacyRoutes);
 app.use('/api/accounting', accountingRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -51,8 +53,8 @@ app.get('/health', (req, res) => {
 });
 
 // Serve static files from Frontend directory only (security: don't expose root)
-// IMPORTANT: This must come AFTER API routes to avoid conflicts
-app.use(express.static(path.join(__dirname, '../Frontend')));
+// Serve static files from root directory (to include index.html)
+app.use(express.static(path.join(__dirname, '../')));
 
 // 404 handler
 app.use((req, res) => {

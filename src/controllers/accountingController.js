@@ -1355,13 +1355,15 @@ const recordTaxPayment = async (req, res) => {
 const getRevenueVsExpenses = async (req, res) => {
     try {
         const { Revenue, Expense } = req.tenantModels;
-        const { startDate, endDate } = req.query;
+        let { startDate, endDate } = req.query;
 
+        // Default to last 6 months if not provided
         if (!startDate || !endDate) {
-            return res.status(400).json({
-                success: false,
-                message: 'Start date and end date are required',
-            });
+            const now = new Date();
+            endDate = now.toISOString();
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(now.getMonth() - 6);
+            startDate = sixMonthsAgo.toISOString();
         }
 
         const dateQuery = {
@@ -1375,9 +1377,15 @@ const getRevenueVsExpenses = async (req, res) => {
         const totalRevenue = revenues.reduce((sum, rev) => sum + rev.amount, 0);
         const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
+        // For the bar chart (Income vs Expense summary)
         res.status(200).json({
             success: true,
             period: { startDate, endDate },
+            data: {
+                labels: ['Summary'],
+                income: [totalRevenue],
+                expenses: [totalExpenses]
+            },
             comparison: {
                 revenue: totalRevenue,
                 expenses: totalExpenses,

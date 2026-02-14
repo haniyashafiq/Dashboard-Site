@@ -55,6 +55,8 @@ const settingsSchema = new mongoose.Schema({
     clinicAddress: String,
     clinicPhone: String,
     clinicEmail: String,
+    taxId: String,
+    clinicLogo: String, // Base64 or URL
     businessHours: {
         monday: { open: String, close: String },
         tuesday: { open: String, close: String },
@@ -109,6 +111,7 @@ const saleSchema = new mongoose.Schema({
     soldBy: String,
     saleDate: { type: Date, default: Date.now },
     invoiceNumber: String,
+    status: { type: String, enum: ['paid', 'voided', 'returned', 'partially_returned'], default: 'paid' },
     notes: String,
     createdAt: { type: Date, default: Date.now }
 });
